@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Text Typing Animator</title>
+
+    <style>
+        html, body{
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-size: 20px;
+            font-family: Georgia, serif;
+            line-height: 1.5rem;
+        }
+        body{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgb(230, 230, 230);
+        }
+        *{
+            box-sizing: border-box;
+        }
+        audio{
+            display: none;
+        }
+        .textbox-container{
+            width: 800px;
+            height: 600px;
+            background: white;
+            border-radius: 4px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgb(180,180,180);
+        }
+        .textbox-container .textbox-header{
+            display: flex;
+            padding: 10px 0;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgb(150,150,150);
+        }
+        .textbox-container .textbox-header-label{
+            width: 60px;
+            color: rgb(80,80,80);
+        }
+        .textbox-container .textbox-content{
+            width: 100%;
+            height: 400px;
+            overflow: auto;
+            border: none;
+            margin-top: 30px;
+            white-space: pre-wrap;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+            resize: none;
+            outline: none;
+        }
+    </style>
+</head>
+
+<body>
+
+        <div class="textbox-container">
+            <div class="textbox-header-container">
+                <div class="textbox-header">
+                    <div class="textbox-header-label textbox-header-label-from">Von:</div>
+                    <div class="textbox-header-value textbox-header-value-from"></div>
+                </div>
+                <div class="textbox-header">
+                    <div class="textbox-header-label textbox-header-label-to">An:</div>
+                    <div class="textbox-header-value textbox-header-value-to"></div>
+                </div>
+            </div>
+            <textarea class="textbox-content">
+
+            </textarea>
+        </div>
+
+        <script>
+            const TEXTS = {
+                's8z1' : {
+                    'from': 'EMILY PENROSE',
+                    'to': 'EDITORIAL',
+                    'text': `
+Hallo an alle:|3\\n|2
+Im Lichte der jüngsten Ereignisse|2 werfen wir|2 "Der Kongress und seine Ehefrauen"|2 'raus|3 und ziehen den Text von John D'Agata,|2 der ursprünglich für Februar geplant war,|2 vor.|4
+ Der ist plötzlich auf tragische Weise aktuell geworden.|4 Das Foto liegt vor und ist fertig,|2 aber der Text braucht noch einen abschließenden Faktencheck.|4
+ Der richtige Volontär kämmt das Ganze|1 Z|1Ü|1G|1I|1G|1 durch,|2 bevor es nächsten Montag in Druck geht.|4 Schickt mir die beste Person,|2 die ihr habt.|3 Ich stelle eine Packung roter Stifte zur Verfügung.|2
+\\n|2
+\\n|3
+-|3 Emily.`
+                }
+        };
+
+        main();
+
+        function main(){
+            const containerEl = document.querySelector('.textbox-container');
+
+            typeText(TEXTS.s8z1, containerEl);
+        }
+
+        async function typeText(text, containerEl){
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+            const SPEED = 70;
+            const SPEED_DEVIANCE_RATIO = 0.35;
+            const PAUSE_SPEED = 100;
+            const PAUSE_SPEED_DEVIANCE_RATIO = 0.15;
+
+            const textboxContentEl = containerEl.querySelector('.textbox-content');
+            const textboxFromEl = containerEl.querySelector('.textbox-header-value-from');
+            const textboxToEl = containerEl.querySelector('.textbox-header-value-to');
+
+            let audios = [];
+            let audioEl, srcEl;
+            for(let i=1; i<=17; ++i){
+                audioEl = document.createElement("audio");
+                srcEl = document.createElement("source");
+                srcEl.src = `./key_sounds/key${i}.mp3`;
+                srcEl.type = 'audio/mpeg';
+                audioEl.appendChild(srcEl);
+                document.body.appendChild(audioEl);
+                audios.push(audioEl);
+            }
+            textboxFromEl.innerText = text.from;
+            textboxToEl.innerText = text.to;
+            textboxContentEl.innerText = '';
+            textboxContentEl.focus();
+
+            let char = null;
+            let sleepFor = null;
+            let nextChar = null;
+            for(let i=0; i<text.text.length; ++i){
+                char = text.text[i];
+
+                switch (char){
+                    case '\n':
+                        char = '';
+                        break;
+                    case '|':
+                        i++;
+                        nextChar = parseInt(text.text[i]);
+                        if(isNaN(nextChar)){
+                            console.error(`Invalid or missing pause character at index ${i}. Encountered '${nextChar}'`);
+                            return;
+                        }
+                        char = '';
+                        sleepFor = PAUSE_SPEED * nextChar + (Math.random() * 2 - 1) * PAUSE_SPEED_DEVIANCE_RATIO * PAUSE_SPEED * nextChar;
+                        break;
+                    case '\\':
+                        i++;
+                        nextChar = text.text[i];
+                        if(nextChar !== 'n'){
+                            console.error(`Invalid or missing character at index ${i}. Encountered '${nextChar}'`);
+                            return;
+                        }
+                        char = "\n";
+                    default:
+                        sleepFor = SPEED + Math.random() * SPEED_DEVIANCE_RATIO;
+                }
+                if(char.length){
+                    textboxContentEl.textContent += char;
+                    let audioIndex = Math.floor(Math.random() * audios.length);
+                    audios[audioIndex].play();
+                }
+                await sleep(sleepFor);
+            }
+        }
+    </script>
+</body>
+
+</html>
