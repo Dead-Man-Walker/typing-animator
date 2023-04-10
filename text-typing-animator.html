@@ -7,12 +7,18 @@
     <title>Text Typing Animator</title>
 
     <style>
+        :root{
+            --tb-width: 1800px;
+            --tb-height: 1200px;
+            --tb-font-size: 50px;
+        }
+
         html, body{
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            font-size: 20px;
+            font-size: var(--tb-font-size);
             font-family: Georgia, serif;
             line-height: 1.5rem;
         }
@@ -29,12 +35,24 @@
             display: none;
         }
         .textbox-container{
-            width: 800px;
-            height: 600px;
+            display: flex;
+            flex-wrap: wrap;
+            width: var(--tb-width);
+            height: var(--tb-height);
             background: white;
-            border-radius: 4px;
-            padding: 10px;
+            border-radius: calc(var(--tb-font-size) * 0.2);
+            padding: calc(var(--tb-font-size) * 0.5);;
             box-shadow: 0 0 10px rgb(180,180,180);
+        }
+        .textbox-container *{
+            transition: opacity ease 500ms;
+            opacity: 1;
+        }
+        .textbox-container.clear *{
+            opacity: 0;
+        }
+        .textbox-container .textbox-header-container{
+            width: 100%;
         }
         .textbox-container .textbox-header{
             display: flex;
@@ -43,21 +61,38 @@
             border-bottom: 1px solid rgb(150,150,150);
         }
         .textbox-container .textbox-header-label{
-            width: 60px;
+            width: calc(var(--tb-font-size) * 3);
             color: rgb(80,80,80);
         }
         .textbox-container .textbox-content{
             width: 100%;
-            height: 400px;
+            height: calc(var(--tb-height) * 0.65);
             overflow: auto;
             border: none;
-            margin-top: 30px;
+            margin-top: var(--tb-font-size);
             white-space: pre-wrap;
             font-family: inherit;
             font-size: inherit;
             line-height: inherit;
             resize: none;
             outline: none;
+            border-bottom: 1px solid rgb(150,150,150);
+        }
+        .textbox-container .textbox-footer-container{
+            width: 100%;
+            display: flex;
+            align-self: end;
+            justify-content: end;
+            padding: 10px 0;
+            font-size: 0.9rem;
+        }
+        .textbox-container .textbox-footer-button{
+            font-size: inherit;
+            font-family: inherit;
+            padding: 0.25rem 0.5rem;
+            color: rgb(80,80,80);
+            background: transparent;
+            border: 1px solid rgb(80,80,80);
         }
     </style>
 </head>
@@ -75,48 +110,212 @@
                     <div class="textbox-header-value textbox-header-value-to"></div>
                 </div>
             </div>
-            <textarea class="textbox-content">
-
-            </textarea>
+            <textarea class="textbox-content"></textarea>
+            <div class="textbox-footer-container">
+                <button class="textbox-footer-button">Senden</button>
+            </div>
         </div>
 
         <script>
             const TEXTS = {
-                's8z1' : {
+                's8z1': {
                     'from': 'EMILY PENROSE',
                     'to': 'EDITORIAL',
+                    'base_speed': 60,
+                    'pause_speed': 60,
+                    'is_sender': true,
                     'text': `
 Hallo an alle:|3\\n|2
-Im Lichte der jüngsten Ereignisse|2 werfen wir|2 "Der Kongress und seine Ehefrauen"|2 'raus|3 und ziehen den Text von John D'Agata,|2 der ursprünglich für Februar geplant war,|2 vor.|4
+Im Lichte der jüngsten Ereignisse|2 werfen wir "Der Kongress und seine Ehefrauen" 'raus|3 und ziehen den Text von John D'Agata,|2 der ursprünglich für Februar geplant war,|2 vor.|4
  Der ist plötzlich auf tragische Weise aktuell geworden.|4 Das Foto liegt vor und ist fertig,|2 aber der Text braucht noch einen abschließenden Faktencheck.|4
- Der richtige Volontär kämmt das Ganze|1 Z|1Ü|1G|1I|1G|1 durch,|2 bevor es nächsten Montag in Druck geht.|4 Schickt mir die beste Person,|2 die ihr habt.|3 Ich stelle eine Packung roter Stifte zur Verfügung.|2
-\\n|2
-\\n|3
--|3 Emily.`
-                }
-        };
+ Der richtige Volontär kämmt das Ganze|1 Z|1Ü|1G|1I|1G|1 durch,|2 bevor es nächsten Montag in Druck geht.|4 Schickt mir die beste Person, die ihr habt. Ich stelle eine Packung roter Stifte zur Verfügung.
+\\n|1
+\\n|1
+-|1 Emily.`
+                },
+                's20z4_1': {
+                    'from': 'JIM FINGAL',
+                    'to': 'JOHN D\'AGATA',
+                    'base_speed': 120,
+                    'pause_speed': 200,
+                    'is_sender': true,
+                    'text': `
+Lieber John,|8<12<|5
+Hey John?|8<1<|6
+!|8<9<`
+                },
+                's20z4_2': {
+                    'from': 'JIM FINGAL',
+                    'to': 'JOHN D\'AGATA',
+                    'base_speed': 65,
+                    'pause_speed': 100,
+                    'is_sender': true,
+                    'text': `
+Hey. John.\\n|5
+Ich bin Jim Fingal, |3
+der Praktikant,|1 der damit beauftragt wurde, |1
+den Faktencheck zu Ihrem Artikel über Las Vegas zu machen. |6
+Mir ist eine Diskrepanz aufgefallen|2 zwischen der Anzahl der Strip Clubs, |1
+die Sie nennen|3 (34)|3 und der Anzahl,|1 die in Ihrer Quelle steht|3 (31). |2
+Schicken Sie mir einfach eine Mail|1 oder rufen mich unter der Nummer an,|1 die in meiner Signatur steht.|5
+\\n|1
+Und -|3 toller Artikel!|5
+\\n|1
+\\n|1
+Ihr|1 Jim|1 Fingal`
 
-        main();
+                },
+                's21z1': {
+                    'from': 'JOHN D\'AGATA',
+                    'to': 'JIM FINGAL',
+                    'base_speed': 0,
+                    'pause_speed': 100,
+                    'is_sender': false,
+                    'text': 'Artikel?'
+                },
+                's21z2': {
+                    'from': 'JIM FINGAL',
+                    'to': 'JOHN D\'AGATA',
+                    'base_speed': 65,
+                    'pause_speed': 100,
+                    'is_sender': true,
+                    'text': 'Sie sind doch John D\'Agata,|1 der Autor,|1 oder?'
+                },
+                's21z3': {
+                    'from': 'JOHN D\'AGATA',
+                    'to': 'JIM FINGAL',
+                    'base_speed': 0,
+                    'pause_speed': 100,
+                    'is_sender': false,
+                    'text': 'Ja. Ich bin John D\'Agata, der Autor.'
+                },
+                's21z4': {
+                    'from': 'EMILY PENROSE',
+                    'to': 'JIM FINGAL',
+                    'base_speed': 0,
+                    'pause_speed': 100,
+                    'is_sender': false,
+                    'text': `
+Hey Jim, sorry, hab vergessen, etwas zu erwähnen.
+Wenn Sie die Mail an John schreiben, nennen Sie den Text nicht Artikel. DAS HASST ER.`
+                },
+                's22z2': {
+                    'from': 'JOHN D\'AGATA',
+                    'to': 'JIM FINGAL',
+                    'base_speed': 0,
+                    'pause_speed': 100,
+                    'is_sender': false,
+                    'text': 'Ich schreibe keine Artikel.'
+                },
+                's22z4': {
+                    'from': 'JOHN D\'AGATA',
+                    'to': 'JIM FINGAL',
+                    'base_speed': 0,
+                    'pause_speed': 100,
+                    'is_sender': false,
+                    'text': 'Ich habe ein Essay geschrieben.'
+                },
+                's22z5': {
+                    'from': 'JIM FINGAL',
+                    'to': 'JOHN D\'AGATA',
+                    'base_speed': 70,
+                    'pause_speed': 100,
+                    'is_sender': true,
+                    'text': 'Verzeihung,|2 mein Fehler.|3 Würden Sie bitte die Anzahl der Strip Clubs klären?'
+                },
+                's22z6': {
+                    'from': 'JOHN D\'AGATA',
+                    'to': 'JIM FINGAL',
+                    'base_speed': 0,
+                    'pause_speed': 100,
+                    'is_sender': false,
+                    'text': `Hi Jim.\\n
+Da liegt ein Missverständnis vor. Das Essay ist so in Ordnung.\\n
+Danke für Ihre Hilfe.\\n
+John.`
+                },
+                's23z1': {
+                    'from': 'JIM FINGAL',
+                    'to': 'JOHN D\'AGATA',
+                    'base_speed': 65,
+                    'pause_speed': 100,
+                    'is_sender': true,
+                    'text': `
+Es ist mehr als in Ordnung!|2 Es ist phantastisch! |2
+Nur muss ich den Faktencheck bei diesem Artikel machen.|4<15<|2 Essay machen.
+\\n|5
+Waren es 34|3 oder 31|3 Strip Clubs?
+\\n|1
+Bitte teilen Sie mir das mit, dann kann ich es korrigieren.`
+                },
+            };
 
-        function main(){
-            const containerEl = document.querySelector('.textbox-container');
+        const containerEl = document.querySelector('.textbox-container');
+        const textboxContentEl = containerEl.querySelector('.textbox-content');
+        const textboxFromEl = containerEl.querySelector('.textbox-header-value-from');
+        const textboxToEl = containerEl.querySelector('.textbox-header-value-to');
+        const textboxButtonEl = containerEl.querySelector('.textbox-footer-button');
+        let run = false;
 
-            typeText(TEXTS.s8z1, containerEl);
+        main(TEXTS.s23z1);
+
+        function main(text){
+
+            document.addEventListener('keypress', event => {
+               switch(event.key){
+                   case 's':
+                       typeText(text);
+                       event.preventDefault();
+                       break;
+                   case 'i':
+                       initTextHeader(text);
+                       event.preventDefault();
+                       break;
+                   case 'c':
+                       clearText();
+                       event.preventDefault();
+                       break;
+                   case 'r':
+                       resetText();
+                       event.preventDefault();
+                       break;
+               }
+            });
         }
 
-        async function typeText(text, containerEl){
-            const sleep = ms => new Promise(r => setTimeout(r, ms));
-            const SPEED = 70;
-            const SPEED_DEVIANCE_RATIO = 0.35;
-            const PAUSE_SPEED = 100;
-            const PAUSE_SPEED_DEVIANCE_RATIO = 0.15;
+        function clearText(){
+            run = false;
+            containerEl.classList.add('clear');
+            document.querySelectorAll('audio').forEach(el => el.remove());
+        }
 
-            const textboxContentEl = containerEl.querySelector('.textbox-content');
-            const textboxFromEl = containerEl.querySelector('.textbox-header-value-from');
-            const textboxToEl = containerEl.querySelector('.textbox-header-value-to');
+        function resetText(){
+            run = false;
+            textboxContentEl.innerText = '';
+            textboxFromEl.innerText = '';
+            textboxToEl.innerText = '';
+            document.querySelectorAll('audio').forEach(el => el.remove());
+        }
+
+        function initTextHeader(text){
+            textboxFromEl.innerText = text.from;
+            textboxToEl.innerText = text.to;
+            textboxButtonEl.innerHTML = text.is_sender ? 'Senden' : 'Antworten';
+            textboxContentEl.textContent = text.base_speed > 0 ? '' : text.text.replaceAll('\\n','');
+            containerEl.classList.remove('clear');
+        }
+
+        async function typeText(text){
+            run = true;
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+            const SPEED = text.base_speed;
+            const SPEED_DEVIANCE_RATIO = 0.15;
+            const PAUSE_SPEED = text.pause_speed;
+            const PAUSE_SPEED_DEVIANCE_RATIO = 0.15;
 
             let audios = [];
             let audioEl, srcEl;
+
             for(let i=1; i<=17; ++i){
                 audioEl = document.createElement("audio");
                 srcEl = document.createElement("source");
@@ -126,15 +325,17 @@ Im Lichte der jüngsten Ereignisse|2 werfen wir|2 "Der Kongress und seine Ehefra
                 document.body.appendChild(audioEl);
                 audios.push(audioEl);
             }
-            textboxFromEl.innerText = text.from;
-            textboxToEl.innerText = text.to;
-            textboxContentEl.innerText = '';
+            initTextHeader(text);
             textboxContentEl.focus();
+
 
             let char = null;
             let sleepFor = null;
             let nextChar = null;
             for(let i=0; i<text.text.length; ++i){
+                if(!run)
+                    return;
+
                 char = text.text[i];
 
                 switch (char){
@@ -159,6 +360,25 @@ Im Lichte der jüngsten Ereignisse|2 werfen wir|2 "Der Kongress und seine Ehefra
                             return;
                         }
                         char = "\n";
+                        break;
+                    case '<':
+                        nextChar = '';
+                        while(true){
+                            i++;
+                            if(text.text[i] === '<')
+                                break;
+                            nextChar += text.text[i];
+                        }
+                        nextChar = parseInt(nextChar);
+                        while(nextChar-- > 0){
+                            textboxContentEl.textContent = textboxContentEl.textContent.slice(0, -1);
+                            let audioIndex = Math.floor(Math.random() * audios.length);
+                            audios[audioIndex].play();
+                            await sleep(SPEED + Math.random() * SPEED_DEVIANCE_RATIO);
+                        }
+                        char = '';
+                        sleepFor = '';
+                        break;
                     default:
                         sleepFor = SPEED + Math.random() * SPEED_DEVIANCE_RATIO;
                 }
